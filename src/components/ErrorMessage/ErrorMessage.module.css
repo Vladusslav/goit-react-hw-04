@@ -1,3 +1,5 @@
-.textError {
-    font-weight: 500;
+.error {
+    color: #2a2828;
+    font-size: 22px;
+    font-weight: 700;
 }

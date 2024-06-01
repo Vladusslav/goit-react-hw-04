@@ -1,61 +1,42 @@
-import toast, { Toaster } from 'react-hot-toast';
-import { TbCameraSearch } from 'react-icons/tb';
+import { Formik, Form, Field } from "formik";
+import toast, { Toaster } from "react-hot-toast";
+/*import { BiSearchAlt } from "react-icons/bi";*/
+import css from "./SearchBar.module.css";
 
-import { useState } from 'react';
-import css from './SearchBar.module.css'
-
-const notify = () => toast("Please, enter something in the searching field!");
-
-const SearchBar = ({ onSubmit }) => {
-  const [query, setQuery] = useState('');
-
-  const handleChange = evt => {
-    setQuery(evt.target.value);
+const SearchBar = ({ onSearch }) => {
+  const initialValues = {
+    query: "",
   };
-
-  const handleSubmit = evt => {
-    evt.preventDefault();
-    if (!query.trim()) {
-      return notify();
+  const handleSubmit = (values, actions) => {
+    if (!values.query) {
+      toast("Please enter your search!", {
+        position: "top-right",
+      });
+      return;
     }
-    onSubmit(query);
-    setQuery('');
+    onSearch(values.query);
+    actions.resetForm();
   };
 
   return (
-    <header className={css.header}>
-      <form className={css.searchForm} onSubmit={handleSubmit}>
-        <input
-          className={css.input}
-          type="text"
-          autoComplete="off"
-          autoFocus
-          placeholder="Search images and photos"
-          onChange={handleChange}
-          value={query}
-        />
-        <button className={css.searchBtn} type="submit">
-          <TbCameraSearch size={'20px'} />
-        </button>
-        <Toaster
-          position="top-center"
-          reverseOrder={false}
-          gutter={8}
-          containerClassName=""
-          containerStyle={{}}
-          toastOptions={{
-            // Define default options
-            className: '',
-            duration: 3000,
-            style: {
-              background: '#fff',
-              color: '#0d3a58',
-              border: '1px solid #0d3a58',
-            },
-          }}
-        />
-      </form>
-    </header>
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <header className={css.header}>
+        <Form className={css.headerForm}>
+          <button className={css.headerFormBtn} type="submit">
+            <BiSearchAlt className={css.formSvg} />
+          </button>
+          <Field
+            className={css.headerInput}
+            type="text"
+            name="query"
+            autoComplete="off"
+            autoFocus
+            placeholder="Search images and photos..."
+          />
+        </Form>
+        <Toaster />
+      </header>
+    </Formik>
   );
 };
 

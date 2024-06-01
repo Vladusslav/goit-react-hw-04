@@ -1,21 +1,27 @@
 .imageCard {
-    width: 400px;
-    height: 267px;
+    width: 310px;
+    background-color: hsl(300, 2%, 34%);
+    transition: transform 250ms ease-in-out;
+    border-bottom: 1px solid antiquewhite;
 }
 
-.hoverImageScale {
-    display: inline-block;
-    overflow: hidden;
-    /* Скрываем всё за контуром */
+.imageCard:hover,
+.imageCard:focus {
+    transform: scale(1.03);
 }
 
-.hoverImageScale img {
-    transition: 1s;
-    /* Время эффекта */
-    display: block;
+.imageDescrWrap {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
 }
 
-.hoverImageScale img:hover {
-    transform: scale(1.2);
-    /* Увеличиваем масштаб */
+.imageDescr {
+    margin: 0;
+    font-size: 12px;
+    color: antiquewhite;
+}
+
+.imageSpan {
+    font-weight: 600;
 }

@@ -1,94 +1,100 @@
-import { useState, useEffect } from 'react';
-import './App.css';
-/*import { getPhotos } from './apiService/photos';*/
-import SearchBar from './components/SearchBar/SearchBar';
-import ImageGallery from './components/ImageGallery/ImageGallery';
-import Loader from './components/Loader/Loader';
-import ImageModal from './components/ImageModal/ImageModal';
-import LoadMoreBtn from './components/LoadMoreBtn/LoadMoreBtn';
-import ErrorMessage from './components/ErrorMessage/ErrorMessage';
+import "./App.css";
+import toast, { Toaster } from "react-hot-toast";
+import { useEffect, useState } from "react";
 
+import requestImagesByQuery from "./services/api";
+import ImageGallery from "./components/ImageGallery/ImageGallery";
+import Loader from "./components/Loader/Loader";
+import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
+import SearchBar from "./components/SearchBar/SearchBar";
+import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
+import ImageModal from "./components/ImageModal/ImageModal";
 
 function App() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [images, setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [page, setPage] = useState(1);
-  const [isEmpty, setIsEmpty] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [modalIsOpen, setIsOpen] = useState(false);
-  const [modalUrl, setModalUrl] = useState('');
-  const [modalAlt, setModalAlt] = useState('');
+  const [loadMoreBtn, setLoadMoreBtn] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalData, setModalData] = useState({
+    imageSrc: "",
+    imageAltDescription: "",
+    imageDescription: "",
+    imageAuthor: "",
+    imageLikes: 0,
+  });
 
   useEffect(() => {
-    if (!query) return;
-
-    const fetchData = async () => {
-      setIsLoading(true);
+    if (!query) {
+      return;
+    }
+    const fetchPhotos = async () => {
       try {
-        const { results, total_pages } = await getPhotos(query, page);
-        if (results.length === 0) {
-          setIsEmpty(true);
-          return;
+        setError(false);
+        setLoading(true);
+        setLoadMoreBtn(false);
+        const data = await requestImagesByQuery(query, page);
+        if (data.total === 0) {
+          setImages([]);
+          toast("Sorry, we couldn't find any images! Please, try again!", {
+            position: "top-right",
+          });
+        } else {
+          setImages((prevImages) => [...prevImages, ...data.results]);
+          setLoadMoreBtn(data.total_pages && data.total_pages !== page);
         }
-        setImages(prevState => [...prevState, ...results]);
-        setIsVisible(page < total_pages);
       } catch (error) {
-        setError(error);
+        setError(true);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    fetchData();
+    fetchPhotos();
   }, [query, page]);
 
-  const handleSubmit = value => {
-    setQuery(value);
-    setImages([]);
-    setPage(1);
-    setIsEmpty(false);
-    setError(false);
-    setIsVisible(false);
+  const handleSearch = (searchQuery) => {
+    if (searchQuery !== query) {
+      setQuery(searchQuery);
+      setPage(1);
+      setImages([]);
+    }
   };
 
-  const loadMore = () => {
-    setPage(prevState => prevState + 1);
-  }
-
-  const handleOpen = (url, alt) => {
-    setIsOpen(true);
-    setModalUrl(url);
-    setModalAlt(alt);
+  const handleSearchNextPage = () => {
+    setPage((prevPage) => prevPage + 1);
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setModalUrl('');
-    setModalAlt('');
-  }
+  const openModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
+  const handleImageClick = (imageData) => {
+    setModalData(imageData);
+    openModal();
+  };
 
   return (
-    <div>
-      <SearchBar onSubmit={handleSubmit} />
-      {images.length > 0 && (
-        <ImageGallery images={images} modalOpen={handleOpen} />
-      )}
-      {isVisible && (
-        <LoadMoreBtn onClick={loadMore} disabled={isLoading}>
-          {isLoading ? 'Loading' : 'Load more'}
-        </LoadMoreBtn>
-      )}
-      {isLoading && <Loader />}
+    <>
+      <SearchBar onSearch={handleSearch} />
+      <Toaster />
       {error && <ErrorMessage />}
-      {isEmpty && <p>Sorry. There are no images ...</p>}
+      {images.length > 0 && (
+        <ImageGallery images={images} onImageClick={handleImageClick} />
+      )}
+      {loading && <Loader />}
+      {loadMoreBtn && <LoadMoreBtn onLoadMore={handleSearchNextPage} />}
       <ImageModal
+        closeModal={closeModal}
         modalIsOpen={modalIsOpen}
-        closeModal={handleClose}
-        src={modalUrl}
-        alt={modalAlt}
+        {...modalData}
       />
-    </div>
+    </>
   );
 }
 

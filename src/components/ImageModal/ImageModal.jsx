@@ -1,30 +1,37 @@
-import Modal from 'react-modal';
+import Modal from "react-modal";
+import css from "./ImageModal.module.css";
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-  },
-  overlay: {
-    backgroundColor: '#142a39db',
-  },
-};
+Modal.setAppElement("#root");
 
-Modal.setAppElement('#root');
-
-const ImageModal = ({ modalIsOpen, closeModal, src, alt }) => {
+const ImageModal = ({
+  closeModal,
+  modalIsOpen,
+  imageSrc = "https://static.vecteezy.com/system/resources/previews/005/337/799/original/icon-image-not-found-free-vector.jpg",
+  imageAltDescription = "Regular gallery image",
+  imageAutor = "Unknown",
+  imageLikes = "0",
+}) => {
   return (
     <Modal
       isOpen={modalIsOpen}
       onRequestClose={closeModal}
-      style={customStyles}
-      contentLabel="Example Modal"
+      className={css.Modal}
+      overlayClassName={css.Overlay}
     >
-      <img src={src} alt={alt} />
+      {" "}
+      <div className={css.modalContainer}>
+        <div className={css.imageContainer}>
+          <img className={css.image} src={imageSrc} alt={imageAltDescription} />
+        </div>
+        <div className={css.imageInfo}>
+          <p className={css.imageDescr}>
+            Author: <span className={css.imageSpan}>{imageAutor}</span>
+          </p>
+          <p className={css.imageDescr}>
+            Likes: <span className={css.imageSpan}>{imageLikes}</span>
+          </p>
+        </div>
+      </div>
     </Modal>
   );
 };
